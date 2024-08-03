@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitHub Profile Roasting 🔥🔥🔥</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f1f3f5;
+        color: #212529;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2em;
+      }
+
+      .card {
+        margin-bottom: 1em;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-header {
+        background-color: #fff;
+        color: #495057;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        padding: 1em 1.5em;
+        font-weight: 600;
+      }
+
+      .card-body {
+        padding: 1.5em;
+      }
+
+      .btn-primary {
+        background-color: #007bff;
+        border: none;
+      }
+
+      .btn-primary:hover {
+        background-color: #0056b3;
+      }
+
+      .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+      }
+
+      .btn-secondary:hover {
+        background-color: #5a6268;
+      }
+
+      .btn-danger {
+        background-color: #e63946;
+        border: none;
+      }
+
+      .btn-danger:hover {
+        background-color: #d62828;
+      }
+
+      .alert-info,
+      .alert-danger {
+        border-radius: 12px;
+      }
+
+      .dropdown-menu {
+        min-width: 150px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .modal-content {
+        border-radius: 12px;
+        border: none;
+      }
+
+      .modal-header {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .modal-footer {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .form-control,
+      .btn {
+        border-radius: 12px;
+      }
+
+      .btn-close {
+        box-shadow: none;
+      }
+
+      .text-muted {
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="my-4 text-center">GitHub Profile Roasting 🔥🔥🔥</h1>
+      <p class="text-center">
+        Project ini terinspirasi dari
+        <a href="https://roastgithub.netlify.app/" target="_blank">Roast GitHub</a></a>.
+      </p>
+      <div class="input-group mb-3">
+        <input
+          type="text"
+          class="form-control"
+          id="username"
+          placeholder="Enter GitHub username"
+          aria-label="GitHub username"
+        />
+        <button class="btn btn-primary" onclick="fetchGithubData()">
+          Submit
+        </button>
+      </div>
+      <div id="result">
+        <p class="text-center">Enter a GitHub username to get started.</p>
+      </div>
+      <h2 class="my-4">Roasting History</h2>
+      <div class="mb-3">
+        <div class="dropdown">
+          <button
+            class="btn btn-secondary dropdown-toggle"
+            type="button"
+            id="sortDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            Sort By
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+            <li>
+              <a class="dropdown-item" href="#" onclick="sortHistory('date')"
+                >Date</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item"
+                href="#"
+                onclick="sortHistory('username')"
+                >Username</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div id="history"></div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="deleteModal"
+      tabindex="-1"
+      aria-labelledby="deleteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="deleteModalLabel">
+              <i class="fas fa-exclamation-triangle text-danger"></i>
+              Confirm Delete
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body text-center">
+            <p>Apakah Anda yakin ingin menghapus item riwayat ini?</p>
+            <p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p>
+          </div>
+          <div class="modal-footer border-0 d-flex justify-content-center">
+            <button
+              type="button"
+              class="btn btn-secondary rounded-pill px-4"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger rounded-pill px-4"
+              id="confirmDeleteButton"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+
+    <script>
+      async function fetchGithubData() {
+        const username = document.getElementById("username").value;
+        const resultDiv = document.getElementById("result");
+        if (!username) return;
+
+        resultDiv.innerHTML =
+          '<div class="alert alert-info text-center">Loading...</div>';
+
+        try {
+          const profileResponse = await axios.get(
+            `https://api.github.com/users/${username}`
+          );
+          const repoResponse = await axios.get(
+            `https://api.github.com/users/${username}/repos?sort=updated`
+          );
+
+          let readmeResponse = { status: 404, data: null };
+          try {
+            readmeResponse = await axios.get(
+              `https://raw.githubusercontent.com/${username}/${username}/main/README.md`
+            );
+          } catch (error) {
+            try {
+              readmeResponse = await axios.get(
+                `https://raw.githubusercontent.com/${username}/${username}/master/README.md`
+              );
+            } catch (error) {}
+          }
+
+          const datas = {
+            name: profileResponse.data.name,
+            bio: profileResponse.data.bio,
+            company: profileResponse.data.company,
+            location: profileResponse.data.location,
+            followers: profileResponse.data.followers,
+            following: profileResponse.data.following,
+            public_repos: profileResponse.data.public_repos,
+            repositories: repoResponse.data
+              .map((repo) => ({
+                name: repo.name,
+                description: repo.description,
+                language: repo.language,
+                stargazers_count: repo.stargazers_count,
+                open_issues_count: repo.open_issues_count,
+                license: repo.license,
+                fork: repo.fork,
+              }))
+              .slice(0, 50),
+          };
+
+          const response = await axios.post(
+            `/roast?username=${username}`,
+            {
+              jsonData: JSON.stringify(datas),
+              README: readmeResponse.data,
+            }
+          );
+
+          const roastingResult = response.data.roasting;
+
+          resultDiv.innerHTML = `
+            <div class="card">
+              <div class="card-header">
+                Roasting Result
+              </div>
+              <div class="card-body">
+                <p class="card-text">${roastingResult}</p>
+              </div>
+            </div>
+          `;
+
+          saveToHistory(username, roastingResult);
+          displayHistory();
+        } catch (error) {
+          console.error("Error fetching data:", error);
+          resultDiv.innerHTML = `
+            <div class="alert alert-danger text-center">
+              Error fetching data. Please try again later.
+            </div>
+          `;
+        }
+      }
+
+      function saveToHistory(username, roastingResult) {
+        const history =
+          JSON.parse(localStorage.getItem("roastingHistory")) || [];
+        history.push({
+          username,
+          roastingResult,
+          date: new Date().toISOString(),
+        });
+        localStorage.setItem("roastingHistory", JSON.stringify(history));
+      }
+
+      function displayHistory() {
+        const historyDiv = document.getElementById("history");
+        const history =
+          JSON.parse(localStorage.getItem("roastingHistory")) || [];
+
+        if (history.length === 0) {
+          historyDiv.innerHTML = `
+            <p class="text-center text-muted">No history available.</p>
+          `;
+          return;
+        }
+
+        historyDiv.innerHTML = history
+          .map(
+            (item, index) => `
+            <div class="card">
+              <div class="card-header d-flex justify-content-between">
+                <span>${item.username}</span>
+                <button
+                  class="btn btn-link p-0"
+                  onclick="confirmDelete('${index}')"
+                >
+                  <i class="fas fa-trash text-danger"></i>
+                </button>
+              </div>
+              <div class="card-body">
+                <p class="card-text">${item.roastingResult}</p>
+                <small class="text-muted">${new Date(
+                  item.date
+                ).toLocaleString()}</small>
+              </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+
+      function sortHistory(sortBy) {
+        let history = JSON.parse(localStorage.getItem("roastingHistory")) || [];
+        if (sortBy === "date") {
+          console.log(sortBy);
+          history.sort((a, b) => new Date(b.date) - new Date(a.date));
+        } else if (sortBy === "username") {
+          history.sort((a, b) => a.username.localeCompare(b.username));
+        }
+        localStorage.setItem("roastingHistory", JSON.stringify(history));
+        displayHistory();
+      }
+
+      function confirmDelete(index) {
+        console.log(index);
+        const deleteModal = new bootstrap.Modal(
+          document.getElementById("deleteModal")
+        );
+        document.getElementById("confirmDeleteButton").onclick = () => {
+          deleteFromHistory(index);
+          deleteModal.hide();
+        };
+        deleteModal.show();
+      }
+
+      function deleteFromHistory(index) {
+        const history =
+          JSON.parse(localStorage.getItem("roastingHistory")) || [];
+        history.splice(index, 1);
+        localStorage.setItem("roastingHistory", JSON.stringify(history));
+        displayHistory();
+      }
+
+      document.addEventListener("DOMContentLoaded", displayHistory);
+    </script>
+  </body>
+</html>
